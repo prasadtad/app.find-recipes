@@ -1,0 +1,33 @@
+{
+  "name": "recipeshelf-find-recipes",
+  "version": "1.0.0",
+  "description": "Lambda function to find recipes using recipeshelf redis cache",
+  "scripts": {
+    "test": "set CACHE_ENDPOINT=redis://localhost:6379&&set OPERATING_SETS_EXPIRE_SECONDS=60&&node tests.js"
+  },
+  "keywords": [
+    "recipeshelf",
+    "redis",
+    "s3"
+  ],
+  "author": "Sri Prasad Tadimalla",
+  "license": "AGPL-3.0",
+  "engines": {
+    "node": "6.10.3"
+  },
+  "devDependencies": {
+    "aws-sdk-mock": "1.7.0",
+    "shelljs": "0.7.8",
+    "zip-folder": "1.0.0"
+  },
+  "optionalDependencies": {
+    "aws-sdk": "2.156.0"
+  },
+  "dependencies": {
+    "lodash": "4.17.4",
+    "redis": "2.8.0",
+    "redis-phrase-complete": "1.0.2",
+    "redis-promisify": "0.1.0",
+    "util.promisify": "1.0.0"
+  }
+}
