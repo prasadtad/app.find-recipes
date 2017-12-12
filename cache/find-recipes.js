@@ -47,6 +47,16 @@ module.exports = class FindRecipes
     whenFind(searchPhrase) 
     {
         return this.redisPhraseComplete.whenFind(searchPhrase)
+                    .then(ids => Promise.all(_.map(ids, id => this.redisProxyClient.whenGet(this.keys.Names, id)))
+                                    .then(allNames => {
+                                        const results = []
+                                        for (let i=0; i<ids.length; i++)
+                                        {
+                                            const name = _.find(allNames[i].split('\n'), name => name.toLowerCase().includes(searchPhrase))
+                                            results.push({name: name, id: ids[i]})
+                                        }
+                                        return Promise.resolve(results)
+                                    }))                    
     }
 
     whenQuit()

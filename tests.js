@@ -66,7 +66,7 @@ tests.push(whenLoadTestData()
                 .then(() => index.whenHandler(autocompleteEvent))
                 .then(results => {
                     testMessages.push('Autocomplete recipe name')
-                    assert.deepEqual(results, ['3uDSc4Vg'])
+                    assert.deepEqual(results, [{name: 'Slow-Cooked Spiced Vegetables and Rice', id: '3uDSc4Vg'}])
                     return Promise.resolve()
                 })
             )            
