@@ -8,16 +8,16 @@ const whenQuit = (findRecipes, err) => findRecipes.whenQuit().then(() => Promise
 
 exports.whenHandler = (event) => {
     if (!event) return Promise.reject(new Error('Invalid event - ' + JSON.stringify(event)))        
+    if (!_.isObject(event)) return Promise.reject(new Error('Invalid event - ' + JSON.stringify(event)))        
+    console.info(JSON.stringify(event))
     const findRecipes = new FindRecipes()
     try
     {
         let p;
-        if (_.isString(event))
-            p = findRecipes.whenFind(event)
-        else if (_.isObject(event))
-            p = findRecipes.whenFilter(event)
+        if (event.name)
+            p = findRecipes.whenFind(event.name)
         else
-            return Promise.reject(new Error('Invalid event - ' + JSON.stringify(event)))        
+            p = findRecipes.whenFilter(event)
         return p.then(results => findRecipes.whenQuit()
                                                 .then(() => Promise.resolve(results)))
                 .catch(err => whenQuit(findRecipes, err))

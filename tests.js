@@ -11,7 +11,9 @@ const redis = require('redis-promisify')
 
 const index = require('./index')
 
-const autocompleteEvent = 'spiced vegetables'
+const autocompleteEvent = {
+    'name': 'spiced vegetables'
+}
 
 const filterEvent = {
     'ingredientIds': ['DfgIn-bx','N2YXf2ns','jnZf_ewk'],
