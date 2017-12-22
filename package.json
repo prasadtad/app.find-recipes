@@ -6,9 +6,7 @@
     "test": "set CACHE_ENDPOINT=redis://localhost:6379&&set OPERATING_SETS_EXPIRE_SECONDS=60&&node tests.js"
   },
   "keywords": [
-    "recipeshelf",
-    "redis",
-    "s3"
+    "recipeshelf"
   ],
   "author": "Sri Prasad Tadimalla",
   "license": "AGPL-3.0",
@@ -18,16 +16,17 @@
   "devDependencies": {
     "archiver": "2.1.0",
     "aws-sdk-mock": "1.7.0",
-    "shelljs": "0.7.8"
+    "redis": "2.8.0",
+    "redis-promisify": "0.1.0",
+    "shelljs": "0.7.8",
+    "util.promisify": "1.0.0"
   },
   "optionalDependencies": {
     "aws-sdk": "2.156.0"
   },
   "dependencies": {
     "lodash": "4.17.4",
-    "redis": "2.8.0",
     "redis-phrase-complete": "1.0.2",
-    "redis-promisify": "0.1.0",
-    "util.promisify": "1.0.0"
+    "redis-poco": "1.0.4"
   }
 }
