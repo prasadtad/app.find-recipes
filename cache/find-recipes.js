@@ -21,19 +21,7 @@ module.exports = class FindRecipes
 
     whenFind(searchPhrase) 
     {
-        return this.redisPhraseComplete.whenFind(searchPhrase)
-                    .then(ids => Promise.all(_.map(ids, this.redisPoco.whenGet))
-                                .then(allRecipes => {
-                                    const results = []
-                                    for (let i=0; i<ids.length; i++)
-                                    {
-                                        if (allRecipes[i].approved) {
-                                            const name = _.find(allRecipes[i].names, name => name.toLowerCase().replace(/[(),!\\.-]+/g,' ').includes(searchPhrase))
-                                            results.push({name: name, id: ids[i]})
-                                        }
-                                    }
-                                    return Promise.resolve(results)
-                                }))                    
+        return this.redisPhraseComplete.whenFind(searchPhrase)         
     }
 
     whenQuit()
