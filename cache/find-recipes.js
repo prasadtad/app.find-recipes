@@ -24,6 +24,11 @@ module.exports = class FindRecipes
         return this.redisPhraseComplete.whenFind(searchPhrase)         
     }
 
+    whenGetRecipe(id)
+    {
+        return this.redisPoco.whenGet(id)
+    }
+
     whenQuit()
     {
         return this.redisPoco.whenQuit()

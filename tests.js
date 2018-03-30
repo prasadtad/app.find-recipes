@@ -15,6 +15,11 @@ const autocompleteEvent = {
     'name': 'peanut sesame'
 }
 
+const autocompleteChatEvent = {
+    'name': 'peanut sesame',
+    'forChat': true
+}
+
 const filterEvent = {
     'accompanimentIds': ['NXkkUWRu'],
     'chefId': 'auth0|5710de6b3c7ae40538abdc35',
@@ -26,6 +31,20 @@ const filterEvent = {
 	'cuisine': ['South Indian'],
     'totalTimeInMinutes': { min: 80, max: 100 },
     'vegan': false
+}
+
+const filterChatEvent = {
+    'accompanimentIds': ['NXkkUWRu'],
+    'chefId': 'auth0|5710de6b3c7ae40538abdc35',
+    'ingredientIds': ['-6US1xKg','GW_XXZqX','_hfTfh3z'],
+	'spiceLevel': ['Hot'],
+	'region': ['Indian Subcontinent'],
+	'overnightPreparation': false,
+	'collections': ['Dinner','Rice dishes'],
+	'cuisine': ['South Indian'],
+    'totalTimeInMinutes': { min: 80, max: 100 },
+    'vegan': false,
+    'forChat': true
 }
 
 const whenLoadTestData = () => {
@@ -73,13 +92,39 @@ tests.push(whenLoadTestData()
                     testMessages.push('Filter recipes')
                     assert.deepEqual(results, ['3uDSc4Vg'])
                     return Promise.resolve()
-                })         
+                })    
+                .then(() => index.whenHandler(filterChatEvent))
+                .then(results => {
+                    results.messages[0].attachment.payload.elements.sort((a, b) => a.title.localeCompare(b.title))
+                    testMessages.push('Filter gallery')
+                    assert.equal(results.messages[0].attachment.payload.elements.length, 1)                    
+                    assert.deepEqual(results.messages[0].attachment.payload.elements[0], {
+                        'title': 'Hyderabadi Vegetable Dum Biryani',
+                        'subtitle': 'A slow-cooked fragrant and spicy rice dish, a legacy of the Nizam rule in Hyderabad in India',
+                        'image_url':'https://res.cloudinary.com/recipe-shelf/image/upload/v1484217570/recipe-images/ip8GhIId.jpg',
+                        'item_url':'https://www.recipeshelf.com.au/recipe/3uDSc4Vg/'
+                    })
+                    return Promise.resolve()
+                })     
                 .then(() => index.whenHandler(autocompleteEvent))
                 .then(results => {
                     testMessages.push('Autocomplete recipe name')
                     assert.deepEqual(results, [{sentence: 'Eggplant in a Peanut-Sesame Gravy', id: 'NXkkUWRu'}])
                     return Promise.resolve()
                 })
+                .then(() => index.whenHandler(autocompleteChatEvent))
+                .then(results => {
+                    results.messages[0].attachment.payload.elements.sort((a, b) => a.title.localeCompare(b.title))
+                    testMessages.push('Autocomplete gallery')
+                    assert.equal(results.messages[0].attachment.payload.elements.length, 1)                    
+                    assert.deepEqual(results.messages[0].attachment.payload.elements[0], {
+                        'title':'Hyderabadi Bagara Baingan',
+                        'subtitle': 'Fried eggplant in a rich peanut and sesame gravy, a legacy of the Nizam rule of Hyderabad in India',
+                        'image_url':'https://res.cloudinary.com/recipe-shelf/image/upload/v1484217570/recipe-images/QjWTNJiJ.jpg',
+                        'item_url':'https://www.recipeshelf.com.au/recipe/NXkkUWRu/'
+                    })
+                    return Promise.resolve()
+                })                
             )            
 
 Promise.all(tests)

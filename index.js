@@ -18,8 +18,9 @@ exports.whenHandler = (event) => {
             p = findRecipes.whenFind(event.name)
         else
             p = findRecipes.whenFilter(event)
-        return p.then(results => findRecipes.whenQuit()
-                                                .then(() => Promise.resolve(results)))
+        return p.then(results => event.forChat ? whenChatGallery(findRecipes, results) : Promise.resolve(results))
+                .then(results => findRecipes.whenQuit()
+                    .then(() => Promise.resolve(results)))
                 .catch(err => whenQuit(findRecipes, err))
     }
     catch (err)
@@ -32,4 +33,28 @@ exports.handler = (event, context, callback) => {
     exports.whenHandler(event)
             .then(result => callback(null, result))
             .catch(err => callback(err))    
+}
+
+const whenChatGallery = (findRecipes, results) => {
+    const message = {
+              'attachment':{
+                'type':'template',
+                'payload':{
+                  'template_type':'generic',
+                  'elements':[]
+                }
+              }
+            }
+    const whenGetRecipes = _.map(_.take(results, 10), result => findRecipes.whenGetRecipe(_.isString(result) ? result : result.id))
+    return Promise.all(whenGetRecipes)
+                  .then(recipes => {
+                      message.attachment.payload.elements.push(..._.map(recipes, recipe => {
+                        return {
+                        'title': recipe.names[0],
+                        "subtitle": recipe.description,
+                        'image_url':'https://res.cloudinary.com/recipe-shelf/image/upload/v1484217570/recipe-images/' + recipe.imageId + '.jpg',
+                        'item_url':'https://www.recipeshelf.com.au/recipe/' + recipe.id + '/'
+                        }}))
+                    return Promise.resolve({ 'messages' : [ message ] })
+                  })
 }
