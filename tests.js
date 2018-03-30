@@ -6,6 +6,15 @@ var assert = require('assert')
 const fs = require('fs')
 const path = require('path')
 
+const AWS = require('aws-sdk-mock')
+const AWS_SDK = require('aws-sdk')
+AWS.setSDKInstance(AWS_SDK)
+
+AWS.mock('S3', 'getObject', function (params, callback) {
+    const file = path.join(__dirname, "testfiles", params.Key)
+    callback(null, { Body: fs.readFileSync(file) })
+})
+
 require('util.promisify/shim')()
 const redis = require('redis-promisify')
 
@@ -44,6 +53,11 @@ const filterChatEvent = {
 	'cuisine': ['South Indian'],
     'totalTimeInMinutes': { min: 80, max: 100 },
     'vegan': false,
+    'forChat': true
+}
+
+const filterIngredientsChatEvent = {
+    'ingredients': 'eggplant, coconut and tamarind',
     'forChat': true
 }
 
@@ -116,6 +130,19 @@ tests.push(whenLoadTestData()
                 .then(results => {
                     results.messages[0].attachment.payload.elements.sort((a, b) => a.title.localeCompare(b.title))
                     testMessages.push('Autocomplete gallery')
+                    assert.equal(results.messages[0].attachment.payload.elements.length, 1)                    
+                    assert.deepEqual(results.messages[0].attachment.payload.elements[0], {
+                        'title':'Hyderabadi Bagara Baingan',
+                        'subtitle': 'Fried eggplant in a rich peanut and sesame gravy, a legacy of the Nizam rule of Hyderabad in India',
+                        'image_url':'https://res.cloudinary.com/recipe-shelf/image/upload/v1484217570/recipe-images/QjWTNJiJ.jpg',
+                        'item_url':'https://www.recipeshelf.com.au/recipe/NXkkUWRu/'
+                    })
+                    return Promise.resolve()
+                })
+                .then(() => index.whenHandler(filterIngredientsChatEvent))
+                .then(results => {
+                    results.messages[0].attachment.payload.elements.sort((a, b) => a.title.localeCompare(b.title))
+                    testMessages.push('Filter ingredients gallery')
                     assert.equal(results.messages[0].attachment.payload.elements.length, 1)                    
                     assert.deepEqual(results.messages[0].attachment.payload.elements[0], {
                         'title':'Hyderabadi Bagara Baingan',

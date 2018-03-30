@@ -4,7 +4,7 @@ const archiver = require('archiver')
 
 shell.rm('-rf', 'dist')
 shell.mkdir('dist')
-shell.cp('-R', [ 'cache/', 'index.js', 'package.json'], 'dist')
+shell.cp('-R', [ 'cache/', 'proxies/', 'index.js', 'package.json'], 'dist')
 shell.cd('dist')
 shell.exec('npm install --production --no-optional')
 shell.rm('package-lock.json')
