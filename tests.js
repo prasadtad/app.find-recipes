@@ -6,15 +6,6 @@ var assert = require('assert')
 const fs = require('fs')
 const path = require('path')
 
-const AWS = require('aws-sdk-mock')
-const AWS_SDK = require('aws-sdk')
-AWS.setSDKInstance(AWS_SDK)
-
-AWS.mock('S3', 'getObject', function (params, callback) {
-    const file = path.join(__dirname, "testfiles", params.Key)
-    callback(null, { Body: fs.readFileSync(file) })
-})
-
 require('util.promisify/shim')()
 const redis = require('redis-promisify')
 
@@ -62,7 +53,7 @@ const filterIngredientsChatEvent = {
 }
 
 const whenLoadTestData = () => {
-    const testData = JSON.parse(fs.readFileSync(path.join(__dirname, 'testdata.json')))
+    const testData = JSON.parse(fs.readFileSync(path.join(__dirname, './testfiles/testdata.json')))
     const client = redis.createClient(process.env.CACHE_ENDPOINT)
     return client.flushdbAsync()
                 .then(() => {

@@ -2,11 +2,6 @@
 
 const _ = require('lodash')
 
-const S3Proxy = require('./proxies/s3-proxy'),
-    s3Proxy = new S3Proxy('recipeshelf')
-
-const whenIngredients = s3Proxy.whenGetObject('ingredients.json')
-
 const FindRecipes = require('./cache/find-recipes')
 
 const whenQuit = (findRecipes, err) => findRecipes.whenQuit().then(() => Promise.reject(err))
@@ -15,7 +10,7 @@ exports.whenHandler = (event) => {
     if (!event) return Promise.reject(new Error('Invalid event - ' + JSON.stringify(event)))        
     if (!_.isObject(event)) return Promise.reject(new Error('Invalid event - ' + JSON.stringify(event)))        
     console.info(JSON.stringify(event))
-    const findRecipes = new FindRecipes(whenIngredients)
+    const findRecipes = new FindRecipes()
     try
     {
         let p;
