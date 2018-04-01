@@ -8,8 +8,9 @@ const RedisPhraseComplete = require('redis-phrase-complete')
 
 module.exports = class FindRecipes
 {
-    constructor()
+    constructor(memoryCache)
     {        
+        this.memoryCache = memoryCache
         this.redisPoco = new RedisPoco({ namespace: 'recipe', itemKey: 'item', endpoint: process.env.CACHE_ENDPOINT, attributes: [ 'vegan', 'totalTimeInMinutes', 'approved', 'spiceLevel', 'region', 'cuisine', 'chefId', 'ingredientIds', 'overnightPreparation', 'accompanimentIds', 'collections' ]})
         this.redisPhraseComplete = new RedisPhraseComplete({ namespace: 'recipe:autocomplete', client: this.redisPoco.client })
         this.ingredientsPhraseComplete = new RedisPhraseComplete({ namespace: 'ingredient:autocomplete', client: this.redisPoco.client })
@@ -17,14 +18,22 @@ module.exports = class FindRecipes
         _.bindAll(this, 'whenFilter', 'whenFind', 'whenQuit')
     }
 
-    whenFilter(filter)
+    whenFilter(filter, filterJson)
     {
+        if (this.memoryCache.hasOwnProperty(filterJson))
+            return this.memoryCache[filterJson]
+
         filter.approved = true
-        if (!filter.ingredients)
-            return this.redisPoco.whenFilter(filter)
+        let whenResult
+        if (!filter.ingredients) {
+            whenResult = this.redisPoco.whenFilter(filter)
+            this.memoryCache[filterJson] = whenResult
+            return whenResult
+        }
+
         const whenFindIngredients = Promise.all(_.map(filter.ingredients.split(/,|and/g), ingredient => 
                                                 this.ingredientsPhraseComplete.whenFind(_.trim(ingredient))))
-        return whenFindIngredients
+        whenResult = whenFindIngredients
             .then(allResults => {
                 allResults = _.product(..._.map(allResults, results => _.uniq(_.map(results, result => result.id))))
                 
@@ -34,16 +43,29 @@ module.exports = class FindRecipes
                     return this.redisPoco.whenFilter(filterWithIngredientIds)
                 })).then(results => Promise.resolve(_.concat(...results)))                
         })
+
+        this.memoryCache[filterJson] = whenResult
+        return whenResult
     }
 
     whenFind(searchPhrase) 
     {
-        return this.redisPhraseComplete.whenFind(searchPhrase)         
+        if (this.memoryCache.hasOwnProperty(searchPhrase))
+            return this.memoryCache[searchPhrase]
+
+        const whenResult = this.redisPhraseComplete.whenFind(searchPhrase)         
+        this.memoryCache[searchPhrase] = whenResult
+        return whenResult
     }
 
     whenGetRecipe(id)
     {
-        return this.redisPoco.whenGet(id)
+        if (this.memoryCache.hasOwnProperty(id))
+            return this.memoryCache['Recipe' + id]
+
+        const whenResult = this.redisPoco.whenGet(id)
+        this.memoryCache['Recipe' + id] = whenResult
+        return whenResult
     }
 
     whenQuit()

@@ -6,18 +6,21 @@ const FindRecipes = require('./cache/find-recipes')
 
 const whenQuit = (findRecipes, err) => findRecipes.whenQuit().then(() => Promise.reject(err))
 
+const memoryCache = {}
+
 exports.whenHandler = (event) => {
     if (!event) return Promise.reject(new Error('Invalid event - ' + JSON.stringify(event)))        
     if (!_.isObject(event)) return Promise.reject(new Error('Invalid event - ' + JSON.stringify(event)))        
-    console.info(JSON.stringify(event))
-    const findRecipes = new FindRecipes()
+    const eventJson = JSON.stringify(event)
+    console.info(eventJson)
+    const findRecipes = new FindRecipes(memoryCache)
     try
     {
         let p;
         if (event.name)
             p = findRecipes.whenFind(event.name)
         else
-            p = findRecipes.whenFilter(event)
+            p = findRecipes.whenFilter(event, eventJson)
         return p.then(results => event.forChat ? whenChatGallery(findRecipes, results) : Promise.resolve(results))
                 .then(results => findRecipes.whenQuit()
                     .then(() => Promise.resolve(results)))
